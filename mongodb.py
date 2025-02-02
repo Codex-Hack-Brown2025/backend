@@ -45,10 +45,17 @@ class MongoHandler:
       }
     })
   
-  def get_user(self, user_email: str):
+  def get_user(self, user_name: str):
     return self.db.get_collection("users").find_one(
       filter={
-        "email": user_email
+        "username": user_name
       }
     )
+  
+  def create_user(self, user_name: str, language: str, pat: str):
+    return self.db.get_collection("users").insert_one({
+      "username": user_name,
+      "language": language,
+      "PAT": pat
+    })
 

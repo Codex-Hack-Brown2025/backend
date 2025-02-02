@@ -159,17 +159,17 @@ async def get_user_language_preference(request: LanguagePreferenceRequest):
         raise HTTPException(status_code=400, detail="Get User Preference failed")
 
 
-@app.get("/github/{owner}/{repo}/content/{path:path}")
-async def get_github_content(owner: str, repo: str, path: str = "", branch: str = "main"):
+@app.get("/github/{owner}/{repo}/{user_name}/content/{path:path}")
+async def get_github_content(owner: str, repo: str, user_name: str, path: str = "", branch: str = "main"):
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
     try:
         mongodb_handler = MongoHandler()
-        user_object = mongodb_handler.get_user()
+        user_object = mongodb_handler.get_user(user_name)
         response = requests.get(
             url,
             params={"ref": branch},
             headers={
-                "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+                "Authorization": f"Bearer {user_object['PAT']}",
                 "Accept": "application/vnd.github.v3+json"
             }
         )
@@ -178,26 +178,43 @@ async def get_github_content(owner: str, repo: str, path: str = "", branch: str 
         return response.json()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class UserCreationRequest(BaseModel):
+    user_name: str
+    language: str
+    pat: str
+
+@app.post("/create/user")
+async def create_user(request: UserCreationRequest):
+    try:
+        mongodb_handler = MongoHandler()
+        mongodb_handler.create_user(request.user_name, request.language, request.pat)
+        return JSONResponse(content={"result": "success"}, status_code=200)
+    except:
+        raise HTTPException(status_code=400, detail="User creation failed")
     
 
-@app.post("/github/{owner}/{repo}/initialize")
-async def initialize_repo(owner: str, repo: str):
+@app.post("/github/{owner}/{repo}/{user_name}/initialize")
+async def initialize_repo(owner: str, repo: str, user_name: str):
     url = f"https://api.github.com/repos/{owner}/{repo}/git/trees"
     with open("./setup_hooks.sh", "r") as file_obj:
         content = "\n".join(file_obj.readlines())
 
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/setup_hooks.sh"
-    headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
-        "Accept": "application/vnd.github.v3+json",
-    }
-
-    data = {
-        "message": "Create setup_hooks.sh",
-        "content": base64.b64encode(content.encode()).decode(),
-        "branch": "main",
-    }
     try:
+        mongodb_handler = MongoHandler()
+        user_object = mongodb_handler.get_user(user_name)
+        headers = {
+            "Authorization": f"token {user_object['PAT']}",
+            "Accept": "application/vnd.github.v3+json",
+        }
+
+        data = {
+            "message": "Create setup_hooks.sh",
+            "content": base64.b64encode(content.encode()).decode(),
+            "branch": "main",
+        }
         r = requests.put(
             url,
             headers=headers,
