@@ -57,19 +57,3 @@ def revert_translations():
                 with open(filepath, "r") as f:
                     lines = f.readlines()
 
-                # %^hello^%
-                with open(filepath, "w") as f:
-                    for line in lines:
-                        matches = [
-                            (match.group(1), match.start(1), match.end(1))
-                            for match in re.finditer(r"%\^([A-Za-z0-9_-]+)\^%", line)
-                        ]
-                        if len(matches) > 0:
-                            landmark, start, _ = matches[0]
-                            f.write(f"{line[:start]}{landmark}^%{comment_data[landmark]['comment']}\n")
-                        else:
-                            f.write(line)
-
-if __name__ == "__main__":
-    revert_translations()
-
