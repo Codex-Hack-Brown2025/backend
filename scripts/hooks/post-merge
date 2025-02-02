@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "Running post-merge hook..."
+python3 .git/hooks/apply_translations.py 
