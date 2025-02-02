@@ -151,13 +151,13 @@ async def get_user_language_preference(request: LanguagePreferenceRequest):
     })
 
 
-@app.get("/github/{owner}/{repo}/file/{path:path}")
-async def get_github_file(owner: str, repo: str, path: str):
+@app.get("/github/{owner}/{repo}/content/{path:path}")
+async def get_github_content(owner: str, repo: str, path: str = "", branch: str = "main"):
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
-    
     try:
         response = requests.get(
             url,
+            params={"ref": branch},
             headers={
                 "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
                 "Accept": "application/vnd.github.v3+json"
@@ -166,7 +166,6 @@ async def get_github_file(owner: str, repo: str, path: str):
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="GitHub API error")
             
-        return {"content": base64.b64decode(response.json()["content"]).decode()}
-        
+        return response.json()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
