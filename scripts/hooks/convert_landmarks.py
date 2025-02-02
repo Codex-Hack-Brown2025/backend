@@ -87,7 +87,7 @@ def convert_landmarks(user_email: str | None):
                             f.write(line)
                 
                 landmark_id_to_comments = dict()
-                # %^foobar^% process the corresponding comment file for each .py file
+                # process the corresponding comment file for each .py file
                 comment_filepath = f"./comment_files/{filepath.lstrip("./").replace("/", ".")}.comments.json"
                 if not os.path.isfile(comment_filepath):
                     open(comment_filepath, 'a').close()
@@ -103,12 +103,12 @@ def convert_landmarks(user_email: str | None):
                             landmark_id_to_comments[comment_data[landmark]["landmark_id"]] = comment
                 
                 r = requests.post(os.environ["TRANSLATION_BACKEND_URL"] + "/update_translations",
-                            data = json.dumps({
-                                "landmark_id_to_comments": landmark_id_to_comments,
-                                "current_language": lang_preference}),
-                            headers = {
-                                "Content-Type": "application/json"
-                            })
+                  data = json.dumps({
+                      "landmark_id_to_comments": landmark_id_to_comments,
+                      "current_language": lang_preference}),
+                  headers = {
+                      "Content-Type": "application/json"
+                  })
                 
                 if r.status_code != 200:
                     print(r.text)

@@ -100,7 +100,7 @@ def apply_translations(user_email: str | None):
                     landmark = landmark_id.split("@")[0]
                     comment_data[landmark]["comment"] = result[landmark_id]
 
-                # %^hello^%:你好，世界
+                # 你好，世界
                 with open(filepath, "w") as f:
                     for line in lines:
                         matches = [

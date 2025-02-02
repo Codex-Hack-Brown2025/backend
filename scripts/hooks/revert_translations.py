@@ -5,7 +5,6 @@ import os
 import subprocess
 import re
 import json
-import requests
 import sys
 
 def get_ignored_files():
@@ -59,7 +58,7 @@ def revert_translations():
                 with open(filepath, "r") as f:
                     lines = f.readlines()
 
-                # %^hello^% hello world!
+                # hello world!
                 with open(filepath, "w") as f:
                     for line in lines:
                         matches = [
