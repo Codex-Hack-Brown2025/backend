@@ -45,8 +45,10 @@ def revert_translations():
     # Iterate through all files in the repository
     for root, _, files in os.walk("."):
         for file in files:
+            if file.startswith("./.git"):
+                continue
             if file.endswith(".py"):  # Only process Python files
-                filepath = os.path.join(root, file).lstrip("./")
+                filepath = os.path.join(root, file)[2:]
                 if filepath in ignore_files:
                     continue
 

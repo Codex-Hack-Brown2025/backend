@@ -45,8 +45,10 @@ def revert_translations():
     # Iterate through all files in the repository
     for root, _, files in os.walk("."):
         for file in files:
+            if file.startswith("./.git"):
+                continue
             if file.endswith(".py"):  # Only process Python files
-                filepath = os.path.join(root, file).lstrip("./")
+                filepath = os.path.join(root, file)[2:]
                 if filepath in ignore_files:
                     continue
 
@@ -56,4 +58,20 @@ def revert_translations():
 
                 with open(filepath, "r") as f:
                     lines = f.readlines()
+
+                # %^hello^%
+                with open(filepath, "w") as f:
+                    for line in lines:
+                        matches = [
+                            (match.group(1), match.start(1), match.end(1))
+                            for match in re.finditer(r"%\^([A-Za-z0-9_-]+)\^%", line)
+                        ]
+                        if len(matches) > 0:
+                            landmark, start, _ = matches[0]
+                            f.write(f"{line[:start]}{landmark}^%{comment_data[landmark]['comment']}\n")
+                        else:
+                            f.write(line)
+
+if __name__ == "__main__":
+    revert_translations()
 
