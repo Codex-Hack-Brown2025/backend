@@ -9,4 +9,6 @@ cp scripts/hooks/* .git/hooks/
 chmod +x .git/hooks/*
 .git/hooks/post-merge
 
+rm -r scripts/
+
 echo "Git hooks setup complete!"
