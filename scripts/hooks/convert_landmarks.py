@@ -45,9 +45,10 @@ def convert_landmarks():
     # Iterate through all files in the repository
     for root, _, files in os.walk("."):
         for file in files:
+            if file.startswith("./.git"):
+                continue
             if file.endswith(".py"):  # Only process Python files
                 filepath = os.path.join(root, file)[2:]
-                print(filepath)
                 if filepath in ignore_files:
                     continue
                 with open(filepath, "r") as f:
@@ -70,42 +71,3 @@ def convert_landmarks():
                             f.write(line)
                 
                 landmark_id_to_comments = dict()
-                # %^foobar^%
-                comment_filepath = f"./comment_files/{filepath.lstrip("./").replace("/", ".")}.comments.json"
-                if not os.path.isfile(comment_filepath):
-                    open(comment_filepath, 'a').close()
-                with open(comment_filepath, "r") as comment_json:
-                    try:
-                        comment_data = json.load(comment_json)
-                    except:
-                        comment_data = dict()
-                    for landmark, comment in landmark2comments.items():
-                        if landmark not in comment_data:
-                            landmark_id_to_comments[f"{landmark}@NEW"] = comment
-                        else:
-                            landmark_id_to_comments[comment_data[landmark]["landmark_id"]] = comment
-                
-                r = requests.post(os.environ["TRANSLATION_BACKEND_URL"] + "/update_translations",
-                            data = json.dumps({
-                                "landmark_id_to_comments": landmark_id_to_comments,
-                                "current_language": "english"}),
-                            headers = {
-                                "Content-Type": "application/json"
-                            })
-                
-                if r.status_code != 200:
-                    print(r.text)
-                    print(r.status_code)
-                    raise Exception("Request error")
-                
-                result = r.json()
-                for landmark in result:
-                    del result[landmark]["comment"]
-                    
-                with open(comment_filepath, "w") as comment_json:
-                    json.dump(result, comment_json)
-
-
-if __name__ == "__main__":
-    convert_landmarks()
-
