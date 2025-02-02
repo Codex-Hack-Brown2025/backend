@@ -2,3 +2,4 @@
 echo "Running pre-merge hook..."
 python3 .git/hooks/pre_translations.py
 git pull
+.git/hooks/post-merge
