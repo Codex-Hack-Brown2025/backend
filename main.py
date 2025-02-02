@@ -347,6 +347,26 @@ async def initialize_repo(owner: str, repo: str, user_name: str):
         if r.status_code != 201:
             print(r.text)
             raise HTTPException(status_code=r.status_code, detail="GitHub API error")
+        
+        with open("./git-pull", "r") as file_obj:
+            content = "\n".join(file_obj.readlines())
+
+        url = f"https://api.github.com/repos/{owner}/{repo}/contents/git-pull"
+
+        data = {
+            "message": "Create git-pull",
+            "content": base64.b64encode(content.encode()).decode(),
+            "branch": "main",
+        }
+        r = requests.put(
+            url,
+            headers=headers,
+            data=json.dumps(data)
+        )
+
+        if r.status_code != 201:
+            print(r.text)
+            raise HTTPException(status_code=r.status_code, detail="GitHub API error")
 
         folder_path = "scripts/hooks/"
         for f in os.listdir(folder_path):
