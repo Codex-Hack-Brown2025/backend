@@ -2,6 +2,7 @@ import base64
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+import uvicorn
 from dify import DifyHandler
 import uuid6
 import logging
@@ -279,7 +280,8 @@ async def initialize_repo(owner: str, repo: str, user_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-
+if __name__ == "__main__":
+ uvicorn.run("main:app", host="0.0.0.0", port=8000)
 
 # read repos
 # read/write content
