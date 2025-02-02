@@ -84,28 +84,3 @@ def revert_translations():
                     landmark = landmark_id.split("@")[0]
                     comment_data[landmark]["comment"] = result[landmark_id]
 
-                # %^hello^%
-                with open(filepath, "w") as f:
-                    for line in lines:
-                        matches = [
-                            (match.group(1), match.start(1), match.end(1))
-                            for match in re.finditer(r"%\^([A-Za-z0-9_-]+)\^%", line)
-                        ]
-                        if len(matches) > 0:
-                            landmark, start, _ = matches[0]
-                            f.write(f"{line[:start]}{landmark}^%{comment_data[landmark]['comment']}\n")
-                        else:
-                            f.write(line)
-                
-                for landmark in result:
-                    landmark = landmark_id.split("@")[0]
-                    del comment_data[landmark]["comment"]
-                
-                with open(comment_filepath, "w") as comment_json:
-                    json.dump(comment_data, comment_json)
-                
-
-
-if __name__ == "__main__":
-    revert_translations()
-

@@ -47,6 +47,7 @@ def convert_landmarks():
         for file in files:
             if file.endswith(".py"):  # Only process Python files
                 filepath = os.path.join(root, file)[2:]
+                print(filepath)
                 if filepath in ignore_files:
                     continue
                 with open(filepath, "r") as f:
