@@ -10,6 +10,7 @@ import logging
 import requests
 import os
 import json
+import re
 
 from mongodb import MongoHandler
 
@@ -183,11 +184,60 @@ async def get_github_content(owner: str, repo: str, user_name: str, path: str = 
         )
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="GitHub API error")
-        result = response.json()
-        if not result["name"].endswith(".py"):
-            return result
-        base64.b64encode("# this is initially left blank".encode()).decode()
-        # result["content"]
+        true_result = response.json()
+        if not true_result["name"].endswith(".py"):
+            return true_result
+        
+        metadata_path = f"comment_files/{path.replace("/", ".")}.comments.json"
+        metadata_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{metadata_path}"
+        response = requests.get(
+            metadata_url,
+            params={"ref": branch},
+            headers={
+                "Authorization": f"Bearer {user_object['PAT']}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+        )
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="GitHub API error")
+        
+        json_result = response.json()
+        json_content = base64.b64decode(json_result["content"].encode()).decode()
+        comment_data = json.loads(json_content)
+        
+
+        content = base64.b64decode(true_result["content"].encode()).decode()
+        lines = content.split("\n")
+
+        landmark_ids = []
+        for line in lines:
+            matches = [
+                match.group(1) for match in re.finditer(r"%\^([A-Za-z0-9_-]+)\^%", line)
+            ]
+            if len(matches) > 0:
+                landmark = matches[0]
+                landmark_ids.append(comment_data[landmark]['landmark_id'])
+        
+        dify_handler = DifyHandler()
+        result = translate_comments(landmark_ids, user_object["language"], mongodb_handler, dify_handler)
+
+        for landmark_id in result:
+            landmark = landmark_id.split("@")[0]
+            comment_data[landmark]["comment"] = result[landmark_id]
+        
+        for i in range(len(lines)):
+            line = lines[i]
+            matches = [
+                (match.group(1), match.start(1), match.end(1))
+                for match in re.finditer(r"%\^([A-Za-z0-9_-]+)\^%", line)
+            ]
+            if len(matches) > 0:
+                landmark, start, _ = matches[0]
+                lines[i] = f"{line[:start]}{landmark}^%{comment_data[landmark]['comment']}"
+        
+        true_result["content"] = base64.b64encode("\n".join(lines).encode()).decode()
+
+        return true_result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
