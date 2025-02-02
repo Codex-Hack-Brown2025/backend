@@ -34,4 +34,13 @@ class MongoHandler:
           f"translations.{target_language}": new_translation
         }
       })
+  
+  def store_landmark(self, landmark_id, original_language, original_translation):
+    self.db.get_collection("landmarks").insert_one({
+      "landmark_id": landmark_id,
+      "original_language": original_language,
+      "translations": {
+        original_language: original_translation
+      }
+    })
 
