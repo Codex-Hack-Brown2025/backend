@@ -8,7 +8,7 @@ import json
 
 import sys
 
-import urllib3
+import urllib.request
 
 
 
@@ -84,18 +84,15 @@ def convert_landmarks(user_name):
 
         try:
 
-            http = urllib3.PoolManager()
             url = "http://54.90.74.38/api/get_user_preference"
             data = json.dumps({"user_name": user_name}).encode("utf-8")
             headers = {"Content-Type": "application/json"}
 
-            response = http.request("POST", url, body=data, headers=headers)
+            req = urllib.request.Request(url, data=data, headers=headers, method="POST")
 
-            if (response.status == 200):
-
-                result = json.loads(response.data.decode("utf-8")) 
-
-                lang_preference = result["language"]
+            with urllib.request.urlopen(req) as response:
+                result = json.load(response)  # Parse JSON response
+                lang_preference = result["language"]   
 
         except:
 
@@ -191,9 +188,6 @@ def convert_landmarks(user_name):
 
                             landmark_id_to_comments[comment_data[landmark]["landmark_id"]] = comment
 
-                
-
-                http = urllib3.PoolManager()
                 url = "http://54.90.74.38/api/update_translations"
                 data = json.dumps({
                   "landmark_id_to_comments": landmark_id_to_comments,
@@ -202,12 +196,10 @@ def convert_landmarks(user_name):
 
                 headers = {"Content-Type": "application/json"}
 
-                response = http.request("POST", url, body=data, headers=headers)
+                req = urllib.request.Request(url, data=data, headers=headers, method="POST")
 
-                if response.status != 200:
-
-                    raise Exception("Request error")
-                result = result = json.loads(response.data.decode("utf-8"))
+                with urllib.request.urlopen(req) as response:
+                    result = json.load(response)  # Parse JSON response
                 with open(comment_filepath, "w") as comment_json:
 
                     json.dump(result, comment_json)

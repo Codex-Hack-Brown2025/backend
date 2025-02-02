@@ -6,7 +6,7 @@ import re
 
 import json
 
-import urllib3
+import urllib.request
 
 import sys
 
@@ -84,17 +84,15 @@ def apply_translations(user_name):
 
         try:
 
-            http = urllib3.PoolManager()
             url = "http://54.90.74.38/api/get_user_preference"
             data = json.dumps({"user_name": user_name}).encode("utf-8")
             headers = {"Content-Type": "application/json"}
 
-            response = http.request("POST", url, body=data, headers=headers)
+            req = urllib.request.Request(url, data=data, headers=headers, method="POST")
 
-            if response.status == 200:
-                result = json.loads(response.data.decode("utf-8"))  # Parse JSON response
-
-                lang_preference = result["language"]
+            with urllib.request.urlopen(req) as response:
+                result = json.load(response)  # Parse JSON response
+                lang_preference = result["language"]             
 
         except:
 
@@ -151,8 +149,6 @@ def apply_translations(user_name):
                         landmark_ids.append(comment_data[landmark]['landmark_id'])
 
                 
-
-                http = urllib3.PoolManager()
                 url = "http://54.90.74.38/api/get_translations"
                 data = json.dumps({
                     "landmark_ids": landmark_ids,
@@ -160,13 +156,10 @@ def apply_translations(user_name):
                 }).encode("utf-8")
                 headers = {"Content-Type": "application/json"}
 
-                response = http.request("POST", url, body=data, headers=headers)
+                req = urllib.request.Request(url, data=data, headers=headers, method="POST")
 
-                if response.status != 200:
-                    raise Exception("Request error")
-
-                result = json.loads(response.data.decode("utf-8"))  # Parse the JSON response
-
+                with urllib.request.urlopen(req) as response:
+                    result = json.load(response)  # Parse JSON response
 
 
                 for landmark_id in result:
