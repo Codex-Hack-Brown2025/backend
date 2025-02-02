@@ -167,7 +167,7 @@ async def get_user_language_preference(request: LanguagePreferenceRequest):
         raise HTTPException(status_code=400, detail="Get User Preference failed")
 
 
-@app.get("/api/github/{owner}/{repo}/{user_name}/content/{path:path}")
+@app.get("/api/github/{owner}/{repo}/{user_name}/{branch}/content/{path:path}")
 async def get_github_content(owner: str, repo: str, user_name: str, path: str = "", branch: str = "main"):
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
     try:
@@ -183,7 +183,11 @@ async def get_github_content(owner: str, repo: str, user_name: str, path: str = 
         )
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="GitHub API error")
-        return response.json()
+        result = response.json()
+        if not result["name"].endswith(".py"):
+            return result
+        base64.b64encode("# this is initially left blank".encode()).decode()
+        # result["content"]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -215,6 +219,17 @@ async def exists_user(user_name: str):
 @app.get("/api/list/file/{path:path}")
 async def get_github_content(path: str = ""):
     return JSONResponse({"result": os.path.isfile(path)})
+
+@app.get("/api/users/{owner}/repos")
+async def get_user_repos(owner: str):
+    url = f"https://api.github.com/users/{owner}/repos"
+    try:
+        mongodb_handler = MongoHandler()
+        user_object = mongodb_handler.get_user(owner)
+        r = requests.get(url, headers = {"Authorization": f"token {user_object['PAT']}"})
+        return r.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/github/{owner}/{repo}/{user_name}/initialize")
