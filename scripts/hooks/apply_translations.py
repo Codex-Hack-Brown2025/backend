@@ -62,11 +62,11 @@ def apply_translations(user_name: str | None):
     for root, _, files in os.walk("."):
         for file in files:
             if file.endswith(".py"):  # Only process Python files
-                filepath = os.path.join(root, file).lstrip("./")
+                filepath = os.path.join(root, file)[2:]
                 if filepath in ignore_files:
                     continue
 
-                comment_filepath = f"./comment_files/{filepath.lstrip("./").replace("/", ".")}.comments.json"
+                comment_filepath = f"./comment_files/{filepath[2:].replace("/", ".")}.comments.json"
                 with open(comment_filepath, "r") as comment_json:
                     comment_data = json.load(comment_json)
 
