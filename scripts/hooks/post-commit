@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "Running post-commit hook..."
+
+# Reapply translations for local use
+python3 .git/hooks/apply_translations.py
