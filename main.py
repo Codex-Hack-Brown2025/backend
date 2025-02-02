@@ -194,6 +194,15 @@ async def create_user(request: UserCreationRequest):
     except:
         raise HTTPException(status_code=400, detail="User creation failed")
     
+@app.get("/exists/user/{user_name}")
+async def exists_user(user_name: str):
+    try:
+        mongodb_handler = MongoHandler()
+        res = mongodb_handler.get_user(user_name)
+        return JSONResponse(content={"result": ("exists" if res is not None else "does not exist")}, status_code=200)
+    except:
+        raise HTTPException(status_code=400, detail="User creation failed")
+    
 
 @app.post("/github/{owner}/{repo}/{user_name}/initialize")
 async def initialize_repo(owner: str, repo: str, user_name: str):
