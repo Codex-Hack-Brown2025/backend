@@ -51,7 +51,7 @@ def revert_translations():
                 if filepath in ignore_files:
                     continue
 
-                comment_filepath = f"./comment_files/{filepath[2:].replace("/", ".")}.comments.json"
+                comment_filepath = f"./comment_files/{filepath[2:].replace('/', '.')}.comments.json"
                 with open(comment_filepath, "r") as comment_json:
                     comment_data = json.load(comment_json)
 

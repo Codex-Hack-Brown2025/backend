@@ -88,7 +88,7 @@ def convert_landmarks(user_name: str | None):
                 
                 landmark_id_to_comments = dict()
                 # process the corresponding comment file for each .py file
-                comment_filepath = f"./comment_files/{filepath[2:].replace("/", ".")}.comments.json"
+                comment_filepath = f"./comment_files/{filepath[2:].replace('/', '.')}.comments.json"
                 if not os.path.isfile(comment_filepath):
                     open(comment_filepath, 'a').close()
                 with open(comment_filepath, "r") as comment_json:
