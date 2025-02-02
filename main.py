@@ -4,6 +4,9 @@ from pydantic import BaseModel
 from dify import DifyHandler
 import uuid6
 import logging
+import requests
+import os
+import base64
 
 from mongodb import MongoHandler
 
@@ -148,57 +151,22 @@ async def get_user_language_preference(request: LanguagePreferenceRequest):
     })
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# class TranslationRequest(BaseModel):
-#     text: str
-#     target_language: str
-
-# @app.get("/")
-# def read_root():
-#     return {"message": "Hello, World!"}
-
-# @app.post("/translate")
-# def translate_comment(request: TranslationRequest):
-#     if request.target_language == "es":
-#         return {"translation": f"Translated to Spanish: {request.text}"}
-#     elif request.target_language == "fr":
-#         return {"translation": f"Translated to French: {request.text}"}
-#     else:
-#         raise HTTPException(status_code=400, detail="Unsupported language")
+@app.get("/github/{owner}/{repo}/file/{path:path}")
+async def get_github_file(owner: str, repo: str, path: str):
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    
+    try:
+        response = requests.get(
+            url,
+            headers={
+                "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+        )
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="GitHub API error")
+            
+        return {"content": base64.b64decode(response.json()["content"]).decode()}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
