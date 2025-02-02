@@ -120,7 +120,7 @@ def apply_translations(user_name):
 
 
 
-                comment_filepath = f"./comment_files/{filepath[2:].replace('/', '.')}.comments.json"
+                comment_filepath = f"./comment_files/{filepath.replace('/', '.')}.comments.json"
 
                 with open(comment_filepath, "r") as comment_json:
 

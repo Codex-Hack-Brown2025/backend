@@ -165,7 +165,7 @@ def convert_landmarks(user_name):
 
                 # process the corresponding comment file for each .py file
 
-                comment_filepath = f"./comment_files/{filepath[2:].replace('/', '.')}.comments.json"
+                comment_filepath = f"./comment_files/{filepath.replace('/', '.')}.comments.json"
 
                 if not os.path.isfile(comment_filepath):
 
