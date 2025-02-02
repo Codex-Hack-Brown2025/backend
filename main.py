@@ -137,6 +137,15 @@ async def update_translations(request: PushTranslationRequest):
     except Exception as e:
         logger.error(f"Translation failed: {e}")
         raise HTTPException(status_code=400, detail="Translation failed")
+    
+class LanguagePreferenceRequest(BaseModel):
+    user_email: str
+
+@app.post("/get_user_preference")
+async def get_user_language_preference(request: LanguagePreferenceRequest):
+    return JSONResponse(content={
+        "language": "english"
+    })
 
 
 

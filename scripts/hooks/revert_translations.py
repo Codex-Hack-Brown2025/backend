@@ -59,7 +59,7 @@ def revert_translations():
                 with open(filepath, "r") as f:
                     lines = f.readlines()
 
-                # %^hello^%
+                # %^hello^% hello world!
                 with open(filepath, "w") as f:
                     for line in lines:
                         matches = [

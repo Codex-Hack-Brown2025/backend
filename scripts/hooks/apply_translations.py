@@ -39,16 +39,30 @@ def get_ignored_files():
 
     return set(ignored_files)
 
-def revert_translations():
+def apply_translations(user_email: str | None):
+
+    lang_preference = "english"
+    if user_email is not None:
+        try:
+            r = requests.post(
+                os.environ["TRANSLATION_BACKEND_URL"] + "/get_user_preference",
+                data = json.dumps({
+                    "user_email": user_email}),
+                headers = {
+                    "Content-Type": "application/json"
+                })
+            if (r.status_code == 200):
+                result = r.json()
+                lang_preference = result["language"]
+        except:
+            pass
 
     ignore_files = get_ignored_files()
     # Iterate through all files in the repository
     for root, _, files in os.walk("."):
         for file in files:
-            if file.startswith("./.git"):
-                continue
             if file.endswith(".py"):  # Only process Python files
-                filepath = os.path.join(root, file)[2:]
+                filepath = os.path.join(root, file).lstrip("./")
                 if filepath in ignore_files:
                     continue
 
@@ -71,7 +85,7 @@ def revert_translations():
                 r = requests.post(os.environ["TRANSLATION_BACKEND_URL"] + "/get_translations",
                             data = json.dumps({
                                 "landmark_ids": landmark_ids,
-                                "target_language": "chinese"}),
+                                "target_language": lang_preference}),
                             headers = {
                                 "Content-Type": "application/json"
                             })
@@ -85,4 +99,31 @@ def revert_translations():
                 for landmark_id in result:
                     landmark = landmark_id.split("@")[0]
                     comment_data[landmark]["comment"] = result[landmark_id]
+
+                # %^hello^%:你好，世界
+                with open(filepath, "w") as f:
+                    for line in lines:
+                        matches = [
+                            (match.group(1), match.start(1), match.end(1))
+                            for match in re.finditer(r"%\^([A-Za-z0-9_-]+)\^%", line)
+                        ]
+                        if len(matches) > 0:
+                            landmark, start, _ = matches[0]
+                            f.write(f"{line[:start]}{landmark}^%{comment_data[landmark]['comment']}\n")
+                        else:
+                            f.write(line)
+                
+                for landmark in result:
+                    landmark = landmark_id.split("@")[0]
+                    del comment_data[landmark]["comment"]
+                
+                with open(comment_filepath, "w") as comment_json:
+                    json.dump(comment_data, comment_json)
+                
+
+if __name__ == "__main__":
+    user_email = None
+    if len(sys.argv) == 2:
+        user_email = sys.argv[1]
+    apply_translations(user_email)
 

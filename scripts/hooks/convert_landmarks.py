@@ -39,7 +39,23 @@ def get_ignored_files():
 
     return set(ignored_files)
 
-def convert_landmarks():
+def convert_landmarks(user_email: str | None):
+    
+    lang_preference = "english"
+    if user_email is not None:
+        try:
+            r = requests.post(
+                os.environ["TRANSLATION_BACKEND_URL"] + "/get_user_preference",
+                data = json.dumps({
+                    "user_email": user_email}),
+                headers = {
+                    "Content-Type": "application/json"
+                })
+            if (r.status_code == 200):
+                result = r.json()
+                lang_preference = result["language"]
+        except:
+            pass
 
     ignore_files = get_ignored_files()
     # Iterate through all files in the repository
@@ -71,7 +87,7 @@ def convert_landmarks():
                             f.write(line)
                 
                 landmark_id_to_comments = dict()
-                # %^foobar^%
+                # %^foobar^% process the corresponding comment file for each .py file
                 comment_filepath = f"./comment_files/{filepath.lstrip("./").replace("/", ".")}.comments.json"
                 if not os.path.isfile(comment_filepath):
                     open(comment_filepath, 'a').close()
@@ -89,7 +105,7 @@ def convert_landmarks():
                 r = requests.post(os.environ["TRANSLATION_BACKEND_URL"] + "/update_translations",
                             data = json.dumps({
                                 "landmark_id_to_comments": landmark_id_to_comments,
-                                "current_language": "english"}),
+                                "current_language": lang_preference}),
                             headers = {
                                 "Content-Type": "application/json"
                             })
@@ -106,5 +122,8 @@ def convert_landmarks():
 
 
 if __name__ == "__main__":
-    convert_landmarks()
+    user_email = None
+    if len(sys.argv) == 2:
+        user_email = sys.argv[1]
+    convert_landmarks(user_email)
 
