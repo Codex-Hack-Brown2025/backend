@@ -165,7 +165,8 @@ async def get_github_content(owner: str, repo: str, path: str = "", branch: str 
         )
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="GitHub API error")
-            
         return response.json()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    
