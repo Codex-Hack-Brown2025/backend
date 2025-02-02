@@ -3,7 +3,7 @@
 echo "Running pre-commit hook..."
 
 # Check for translated comments and revert them to English
-python3 .git/hooks/revert_translations.py
+python3 .git/hooks/convert_landmarks.py
 
 # Add the reverted files to the commit
 git add .

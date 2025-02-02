@@ -49,11 +49,15 @@ def revert_translations():
                 filepath = os.path.join(root, file).lstrip("./")
                 if filepath in ignore_files:
                     continue
+
+                comment_filepath = f"./comment_files/{filepath.lstrip("./").replace("/", ".")}.comments.json"
+                with open(comment_filepath, "r") as comment_json:
+                    comment_data = json.load(comment_json)
+
                 with open(filepath, "r") as f:
                     lines = f.readlines()
 
-                landmark2comments = dict()
-                # Revert translated comments to landmarks and store new comments
+                # %^hello^% Revert translated comments to landmarks and store new comments
                 with open(filepath, "w") as f:
                     for line in lines:
                         matches = [
@@ -61,45 +65,10 @@ def revert_translations():
                             for match in re.finditer(r"%\^([A-Za-z0-9_-]+)\^%", line)
                         ]
                         if len(matches) > 0:
-                            landmark, start, end = matches[0]
-                            comment = line[end + 2:].rstrip()
-                            landmark2comments[landmark] = comment
-                            f.write(f"{line[:start]}{landmark}^%\n")
+                            landmark, start, _ = matches[0]
+                            f.write(f"{line[:start]}{landmark}^%{comment_data[landmark]['comment']}\n")
                         else:
                             f.write(line)
-                
-                landmark_id_to_comments = dict()
-                # %^foobar^% Read landmark ids from corresponding comment file for each .py file
-                comment_filepath = f"./comment_files/{filepath.lstrip("./").replace("/", ".")}.comments.json"
-                if not os.path.isfile(comment_filepath):
-                    open(comment_filepath, 'a').close()
-                with open(comment_filepath, "r") as comment_json:
-                    try:
-                        comment_data = json.load(comment_json)
-                    except:
-                        comment_data = dict()
-                    for landmark, comment in landmark2comments.items():
-                        if landmark not in comment_data:
-                            landmark_id_to_comments[f"{landmark}@NEW"] = comment
-                        else:
-                            landmark_id_to_comments[comment_data[landmark]["landmark_id"]] = comment
-                
-                r = requests.post(os.environ["TRANSLATION_BACKEND_URL"] + "/update_translations",
-                            data = json.dumps({
-                                "landmark_id_to_comments": landmark_id_to_comments,
-                                "current_language": "english"}),
-                            headers = {
-                                "Content-Type": "application/json"
-                            })
-                
-                if r.status_code != 200:
-                    print(r.text)
-                    print(r.status_code)
-                    raise Exception("Request error")
-                result = r.json()
-                with open(comment_filepath, "w") as comment_json:
-                    json.dump(result, comment_json)
-
 
 if __name__ == "__main__":
     revert_translations()
