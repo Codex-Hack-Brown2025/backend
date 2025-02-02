@@ -171,6 +171,7 @@ async def get_user_language_preference(request: LanguagePreferenceRequest):
 @app.get("/api/github/{owner}/{repo}/{user_name}/{branch}/content/{path:path}")
 async def get_github_content(owner: str, repo: str, user_name: str, path: str = "", branch: str = "main"):
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    print(url)
     try:
         mongodb_handler = MongoHandler()
         user_object = mongodb_handler.get_user(user_name)
@@ -185,7 +186,9 @@ async def get_github_content(owner: str, repo: str, user_name: str, path: str = 
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="GitHub API error")
         true_result = response.json()
-        if not true_result["name"].endswith(".py"):
+        if type(true_result) == list:
+            return true_result
+        elif not true_result["name"].endswith(".py"):
             return true_result
         try:
             metadata_path = f"comment_files/{path.replace("/", ".")}.comments.json"
