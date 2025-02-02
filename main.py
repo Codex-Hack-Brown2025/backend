@@ -50,7 +50,7 @@ def compare_comments(landmark_id_to_comments: dict[str, str], current_language: 
             # Not a new landmark
             result = mongodb_handler.get_translations(landmark_id)
 
-            if result[current_language].rstrip() != comment:
+            if result["translations"][current_language].rstrip() != comment:
                 # Comment is edited
                 new_landmark_id = f"{landmark}@{uuid6.uuid8().hex}"
                 mongodb_handler.store_landmark(new_landmark_id, current_language, comment)
@@ -61,7 +61,7 @@ def compare_comments(landmark_id_to_comments: dict[str, str], current_language: 
             else:
                 translated_landmarks[landmark] = {
                     "landmark_id": landmark_id,
-                    "comment": result[current_language]
+                    "comment": result["translations"][current_language]
                 }
 
     return translated_landmarks
@@ -83,8 +83,8 @@ def translate_comments(landmark_ids: list[str], target_language: str, mongodb_ha
             # If not, call the Dify API
             new_translation = dify_handler.translate_text(translations[original_language], target_language)
             # Store the translation in MongoDB (handled by your teammate)
-            mongodb_handler.store_translation(landmark_id, target_language, new_translation)
-            translated_landmarks[landmark_id] = new_translation
+            mongodb_handler.store_translation(landmark_id, target_language, new_translation.translation)
+            translated_landmarks[landmark_id] = new_translation.translation
         else:
             translated_landmarks[landmark_id] = translations[target_language]
 

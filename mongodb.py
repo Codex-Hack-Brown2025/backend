@@ -1,3 +1,4 @@
+from typing import Any
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -18,7 +19,7 @@ class MongoHandler:
 
     self.db = self.client.get_database(db_name)
   
-  def get_translations(self, landmark_id: str) -> tuple[dict[str, str], str]:
+  def get_translations(self, landmark_id: str) -> dict[str, Any]:
     return self.db.get_collection("landmarks").find_one(
       filter = {
         "landmark_id": landmark_id

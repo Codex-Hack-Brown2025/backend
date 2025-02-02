@@ -69,7 +69,7 @@ def convert_landmarks():
                             f.write(line)
                 
                 landmark_id_to_comments = dict()
-                # %^foobar^% Read landmark ids from corresponding comment file for each .py file
+                # %^foobar^%
                 comment_filepath = f"./comment_files/{filepath.lstrip("./").replace("/", ".")}.comments.json"
                 if not os.path.isfile(comment_filepath):
                     open(comment_filepath, 'a').close()
@@ -96,7 +96,11 @@ def convert_landmarks():
                     print(r.text)
                     print(r.status_code)
                     raise Exception("Request error")
+                
                 result = r.json()
+                for landmark in result:
+                    del result[landmark]["comment"]
+                    
                 with open(comment_filepath, "w") as comment_json:
                     json.dump(result, comment_json)
 
