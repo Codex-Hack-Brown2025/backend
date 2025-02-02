@@ -100,8 +100,6 @@ def convert_landmarks():
                     raise Exception("Request error")
                 
                 result = r.json()
-                for landmark in result:
-                    del result[landmark]["comment"]
                     
                 with open(comment_filepath, "w") as comment_json:
                     json.dump(result, comment_json)

@@ -71,6 +71,12 @@ def revert_translations():
                             f.write(f"{line[:start]}{landmark}^%{comment_data[landmark]['comment']}\n")
                         else:
                             f.write(line)
+                
+                for landmark in comment_data:
+                    del comment_data[landmark]["comment"]
+                
+                with open(comment_filepath, "w") as comment_json:
+                    json.dump(comment_data, comment_json)
 
 if __name__ == "__main__":
     revert_translations()
