@@ -1,3 +1,0 @@
-#!/bin/bash
-echo "Running pre-merge hook..."
-python3 .git/hooks/pre_translations.py
