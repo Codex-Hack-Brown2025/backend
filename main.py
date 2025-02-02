@@ -2,6 +2,7 @@ import base64
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from dify import DifyHandler
 import uuid6
@@ -12,6 +13,7 @@ import json
 
 from mongodb import MongoHandler
 
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Local Translation Tool",
@@ -21,10 +23,11 @@ app = FastAPI(
 
 origins = ["*"]
 app.add_middleware(
- allow_origins=origins,
- allow_credentials=True,
- allow_methods=["*"],
- allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Set up logging to track requests and responses
