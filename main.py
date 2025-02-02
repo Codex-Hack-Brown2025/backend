@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 DIFY_API_KEY = "your-dify-api-key"
 DIFY_API_URL = "https://api.dify.ai/v1/translate"
 
-def compare_comments(landmark_id_to_comments: dict[str, str], current_language: str, mongodb_handler: MongoHandler, dify_handler: DifyHandler) -> dict[str, tuple[str, str]]:
+def compare_comments(landmark_id_to_comments: dict[str, str], current_language: str, mongodb_handler: MongoHandler, dify_handler: DifyHandler) -> dict[str, dict[str, str]]:
     """
     Compares the given comments with the mongodb-store comments.
 
@@ -42,7 +42,10 @@ def compare_comments(landmark_id_to_comments: dict[str, str], current_language: 
             # Is new landmark
             new_landmark_id = f"{landmark}@{uuid6.uuid8().hex}"
             mongodb_handler.store_landmark(new_landmark_id, current_language, comment)
-            translated_landmarks[landmark_id] = (new_landmark_id, comment)
+            translated_landmarks[landmark] = {
+                    "landmark_id": new_landmark_id,
+                    "comment": comment
+                }
         else:
             # Not a new landmark
             result = mongodb_handler.get_translations(landmark_id)
@@ -51,9 +54,15 @@ def compare_comments(landmark_id_to_comments: dict[str, str], current_language: 
                 # Comment is edited
                 new_landmark_id = f"{landmark}@{uuid6.uuid8().hex}"
                 mongodb_handler.store_landmark(new_landmark_id, current_language, comment)
-                translated_landmarks[landmark_id] = (new_landmark_id, comment)
+                translated_landmarks[landmark] = {
+                    "landmark_id": new_landmark_id,
+                    "comment": comment
+                }
             else:
-                translated_landmarks[landmark_id] = (landmark_id, result[current_language])
+                translated_landmarks[landmark] = {
+                    "landmark_id": landmark_id,
+                    "comment": result[current_language]
+                }
 
     return translated_landmarks
 

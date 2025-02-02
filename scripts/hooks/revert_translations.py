@@ -1,6 +1,10 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 import re
 import json
+import requests
 
 def revert_translations():
 
@@ -32,14 +36,26 @@ def revert_translations():
                 # Read landmark ids from corresponding comment file for each .py file
                 comment_filepath = f"./comment_files/{filepath.replace("/", ".")}.comments.json"
                 with open(comment_filepath, "r") as comment_json:
-                    comment_data = json.load(comment_json)
+                    try:
+                        comment_data = json.load(comment_json)
+                    except:
+                        comment_data = dict()
                     for landmark, comment in landmark2comments.items():
                         if landmark not in comment_data:
                             landmark_id_to_comments[f"{landmark}@NEW"] = comment
                         else:
                             landmark_id_to_comments[comment_data[landmark]["landmark_id"]] = comment
                 
-                # TODO: call API
+                r = requests.post(os.environ["TRANSLATION_BACKEND_URL"] + "/update_translations",
+                              data = json.dumps({
+                                "landmark_id_to_comments": landmark_id_to_comments,
+                                "current_language": "english"}))
+                
+                if r.status_code != 200:
+                    raise Exception("Request error")
+                result = r.json()
+                with open(comment_filepath, "w") as comment_json:
+                    json.dump(result, comment_json)
 
 
 if __name__ == "__main__":
