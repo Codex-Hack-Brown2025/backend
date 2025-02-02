@@ -19,13 +19,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+origins = ["*"]
+app.add_middleware(
+ allow_origins=origins,
+ allow_credentials=True,
+ allow_methods=["*"],
+ allow_headers=["*"],
+)
+
 # Set up logging to track requests and responses
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# DIFY API implementation (replace with actual API key and URL)
-DIFY_API_KEY = "your-dify-api-key"
-DIFY_API_URL = "https://api.dify.ai/v1/translate"
 
 def compare_comments(landmark_id_to_comments: dict[str, str], current_language: str, mongodb_handler: MongoHandler, dify_handler: DifyHandler) -> dict[str, dict[str, str]]:
     """
@@ -96,7 +100,7 @@ def translate_comments(landmark_ids: list[str], target_language: str, mongodb_ha
     return translated_landmarks
 
 # Root endpoint
-@app.get("/", summary="Root endpoint", description="Returns a welcome message.")
+@app.get("/api/test", summary="Root endpoint", description="Returns a welcome message.")
 def read_root():
     return {"message": "Hello, World!"}
 
@@ -109,7 +113,7 @@ class PullTranslationRequest(BaseModel):
     target_language: str
 
 # Translation endpoint
-@app.post("/get_translations", summary="Gets translated landmarks", description="Translates comments in the code.")
+@app.post("/api/get_translations", summary="Gets translated landmarks", description="Translates comments in the code.")
 async def get_translations(request: PullTranslationRequest): 
     logger.info(f"Translating to {request.target_language}")
     try:
@@ -130,7 +134,7 @@ class PushTranslationRequest(BaseModel):
     landmark_id_to_comments: dict[str, str]
     current_language: str
 
-@app.post("/update_translations")
+@app.post("/api/update_translations")
 async def update_translations(request: PushTranslationRequest):
     try:
         mongodb_handler = MongoHandler()
@@ -146,7 +150,7 @@ async def update_translations(request: PushTranslationRequest):
 class LanguagePreferenceRequest(BaseModel):
     user_name: str
 
-@app.post("/get_user_preference")
+@app.post("/api/get_user_preference")
 async def get_user_language_preference(request: LanguagePreferenceRequest):
     try:
         mongodb_handler = MongoHandler()
@@ -160,7 +164,7 @@ async def get_user_language_preference(request: LanguagePreferenceRequest):
         raise HTTPException(status_code=400, detail="Get User Preference failed")
 
 
-@app.get("/github/{owner}/{repo}/{user_name}/content/{path:path}")
+@app.get("/api/github/{owner}/{repo}/{user_name}/content/{path:path}")
 async def get_github_content(owner: str, repo: str, user_name: str, path: str = "", branch: str = "main"):
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
     try:
@@ -186,7 +190,7 @@ class UserCreationRequest(BaseModel):
     language: str
     pat: str
 
-@app.post("/create/user")
+@app.post("/api/create/user")
 async def create_user(request: UserCreationRequest):
     try:
         mongodb_handler = MongoHandler()
@@ -195,7 +199,7 @@ async def create_user(request: UserCreationRequest):
     except:
         raise HTTPException(status_code=400, detail="User creation failed")
     
-@app.get("/exists/user/{user_name}")
+@app.get("/api/exists/user/{user_name}")
 async def exists_user(user_name: str):
     try:
         mongodb_handler = MongoHandler()
@@ -205,7 +209,7 @@ async def exists_user(user_name: str):
         raise HTTPException(status_code=400, detail="User creation failed")
     
 
-@app.post("/github/{owner}/{repo}/{user_name}/initialize")
+@app.post("/api/github/{owner}/{repo}/{user_name}/initialize")
 async def initialize_repo(owner: str, repo: str, user_name: str):
     url = f"https://api.github.com/repos/{owner}/{repo}/git/trees"
 
