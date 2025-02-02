@@ -8,6 +8,8 @@ import json
 
 import sys
 
+import urllib.request
+
 
 
 def get_ignored_files():
@@ -71,7 +73,27 @@ def get_ignored_files():
 
 
 
-def revert_translations():
+def revert_translations(user_name: str):
+
+    lang_preference = "english"
+
+    if user_name is not None:
+
+        try:
+
+            url = "http://54.90.74.38/api/get_user_preference"
+            data = json.dumps({"user_name": user_name}).encode("utf-8")
+            headers = {"Content-Type": "application/json"}
+
+            req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+
+            with urllib.request.urlopen(req) as response:
+                result = json.load(response)  # Parse JSON response
+                lang_preference = result["language"]             
+
+        except:
+
+            pass
 
 
 
@@ -109,7 +131,24 @@ def revert_translations():
 
                     lines = f.readlines()
 
+                url = "http://54.90.74.38/api/get_translations"
+                data = json.dumps({
+                    "landmark_ids": [comment_data[k]["landmark_id"] for k in comment_data],
+                    "target_language": lang_preference
+                }).encode("utf-8")
+                headers = {"Content-Type": "application/json"}
 
+                req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+
+                with urllib.request.urlopen(req) as response:
+                    result = json.load(response)  # Parse JSON response
+
+
+                for landmark_id in result:
+
+                    landmark = landmark_id.split("@")[0]
+
+                    comment_data[landmark]["comment"] = result[landmark_id]
 
                 # hello world!
 
@@ -151,6 +190,12 @@ def revert_translations():
 
 if __name__ == "__main__":
 
-    revert_translations()
+    user_name = None
+
+    if len(sys.argv) == 2:
+
+        user_name = sys.argv[1]
+
+    revert_translations(user_name)
 
 

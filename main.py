@@ -73,8 +73,7 @@ def compare_comments(landmark_id_to_comments: dict[str, str], current_language: 
                 }
             else:
                 translated_landmarks[landmark] = {
-                    "landmark_id": landmark_id,
-                    "comment": result["translations"][current_language]
+                    "landmark_id": landmark_id
                 }
 
     return translated_landmarks
