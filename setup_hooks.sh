@@ -3,19 +3,9 @@
 echo "Setting up Git hooks..."
 
 # Copy hooks to .git/hooks
-cp scripts/hooks/pre-commit .git/hooks/pre-commit
-cp scripts/hooks/post-commit .git/hooks/post-commit
-cp scripts/hooks/post-merge .git/hooks/post-merge
-cp scripts/hooks/revert_translations.py .git/hooks/revert_translations.py
-cp scripts/hooks/convert_landmarks.py .git/hooks/convert_landmarks.py
-cp scripts/hooks/apply_translations.py .git/hooks/apply_translations.py
+cp scripts/hooks/* .git/hooks/
 
 # Make the hooks executable
-chmod +x .git/hooks/pre-commit
-chmod +x .git/hooks/post-commit
-chmod +x .git/hooks/post-merge
-chmod +x .git/hooks/revert_translations.py
-chmod +x .git/hooks/convert_landmarks.py
-chmod +x .git/hooks/apply_translations.py
+chmod +x .git/hooks/*
 
 echo "Git hooks setup complete!"
