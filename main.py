@@ -57,7 +57,6 @@ def compare_comments(landmark_id_to_comments: dict[str, str], current_language: 
             mongodb_handler.store_landmark(new_landmark_id, current_language, comment)
             translated_landmarks[landmark] = {
                     "landmark_id": new_landmark_id,
-                    "comment": comment
                 }
         else:
             # Not a new landmark
@@ -69,7 +68,6 @@ def compare_comments(landmark_id_to_comments: dict[str, str], current_language: 
                 mongodb_handler.store_landmark(new_landmark_id, current_language, comment)
                 translated_landmarks[landmark] = {
                     "landmark_id": new_landmark_id,
-                    "comment": comment
                 }
             else:
                 translated_landmarks[landmark] = {
