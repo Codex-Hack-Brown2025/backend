@@ -39,15 +39,15 @@ def get_ignored_files():
 
     return set(ignored_files)
 
-def convert_landmarks(user_email: str | None):
+def convert_landmarks(user_name: str | None):
     
     lang_preference = "english"
-    if user_email is not None:
+    if user_name is not None:
         try:
             r = requests.post(
                 os.environ["TRANSLATION_BACKEND_URL"] + "/get_user_preference",
                 data = json.dumps({
-                    "user_email": user_email}),
+                    "user_name": user_name}),
                 headers = {
                     "Content-Type": "application/json"
                 })
@@ -122,8 +122,8 @@ def convert_landmarks(user_email: str | None):
 
 
 if __name__ == "__main__":
-    user_email = None
+    user_name = None
     if len(sys.argv) == 2:
-        user_email = sys.argv[1]
-    convert_landmarks(user_email)
+        user_name = sys.argv[1]
+    convert_landmarks(user_name)
 

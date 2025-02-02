@@ -44,4 +44,11 @@ class MongoHandler:
         original_language: original_translation
       }
     })
+  
+  def get_user(self, user_email: str):
+    return self.db.get_collection("users").find_one(
+      filter={
+        "email": user_email
+      }
+    )
 

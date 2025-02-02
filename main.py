@@ -143,19 +143,28 @@ async def update_translations(request: PushTranslationRequest):
         raise HTTPException(status_code=400, detail="Translation failed")
     
 class LanguagePreferenceRequest(BaseModel):
-    user_email: str
+    user_name: str
 
 @app.post("/get_user_preference")
 async def get_user_language_preference(request: LanguagePreferenceRequest):
-    return JSONResponse(content={
-        "language": "english"
-    })
+    try:
+        mongodb_handler = MongoHandler()
+        user_object = mongodb_handler.get_user(request.user_name)
+        return JSONResponse(content={
+            "language": user_object["language"]
+        })
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Get User Preference failed")
 
 
 @app.get("/github/{owner}/{repo}/content/{path:path}")
 async def get_github_content(owner: str, repo: str, path: str = "", branch: str = "main"):
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
     try:
+        mongodb_handler = MongoHandler()
+        user_object = mongodb_handler.get_user()
         response = requests.get(
             url,
             params={"ref": branch},
@@ -170,6 +179,7 @@ async def get_github_content(owner: str, repo: str, path: str = "", branch: str 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+
 @app.post("/github/{owner}/{repo}/initialize")
 async def initialize_repo(owner: str, repo: str):
     url = f"https://api.github.com/repos/{owner}/{repo}/git/trees"
@@ -196,7 +206,7 @@ async def initialize_repo(owner: str, repo: str):
 
         if r.status_code != 201:
             print(r.text)
-            raise Exception("GitHub API Error")
+            raise HTTPException(status_code=r.status_code, detail="GitHub API error")
 
         folder_path = "scripts/hooks/"
         for f in os.listdir(folder_path):
@@ -218,7 +228,12 @@ async def initialize_repo(owner: str, repo: str):
 
             if r.status_code != 201:
                 print(r.text)
-                raise Exception("GitHub API Error")
+                raise HTTPException(status_code=r.status_code, detail="GitHub API error")
         return JSONResponse(content = {"result": "success"}, status_code=200)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+
+# read repos
+# read/write content
