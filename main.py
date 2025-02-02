@@ -198,8 +198,6 @@ async def create_user(request: UserCreationRequest):
 @app.post("/github/{owner}/{repo}/{user_name}/initialize")
 async def initialize_repo(owner: str, repo: str, user_name: str):
     url = f"https://api.github.com/repos/{owner}/{repo}/git/trees"
-    with open("./setup_hooks.sh", "r") as file_obj:
-        content = "\n".join(file_obj.readlines())
 
     try:
         mongodb_handler = MongoHandler()
@@ -209,11 +207,11 @@ async def initialize_repo(owner: str, repo: str, user_name: str):
             "Accept": "application/vnd.github.v3+json",
         }
 
-        url = f"https://api.github.com/repos/{owner}/{repo}/contents/comment_files/init.txt"
+        url = f"https://api.github.com/repos/{owner}/{repo}/contents/comment_files/empty.py"
 
         data = {
             "message": "Create comment_files/ directory",
-            "content": base64.b64encode("intentionally empty".encode()).decode(),
+            "content": base64.b64encode("# this is initially left blank".encode()).decode(),
             "branch": "main",
         }
 
@@ -226,6 +224,9 @@ async def initialize_repo(owner: str, repo: str, user_name: str):
         if r.status_code != 201:
             print(r.text)
             raise HTTPException(status_code=r.status_code, detail="GitHub API error")
+        
+        with open("./setup_hooks.sh", "r") as file_obj:
+            content = "\n".join(file_obj.readlines())
 
         url = f"https://api.github.com/repos/{owner}/{repo}/contents/setup_hooks.sh"
 
