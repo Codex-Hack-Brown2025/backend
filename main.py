@@ -212,6 +212,11 @@ async def exists_user(user_name: str):
         raise HTTPException(status_code=400, detail="User creation failed")
     
 
+@app.get("/api/list/file/{path:path}")
+async def get_github_content(path: str = ""):
+    return JSONResponse({"result": os.path.isfile(path)})
+
+
 @app.post("/api/github/{owner}/{repo}/{user_name}/initialize")
 async def initialize_repo(owner: str, repo: str, user_name: str):
     url = f"https://api.github.com/repos/{owner}/{repo}/git/trees"
