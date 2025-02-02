@@ -288,7 +288,7 @@ async def get_user_repos(owner: str, repo: str, user_name: str):
     url = f"https://api.github.com/repos/{owner}/{repo}/branches"
     try:
         mongodb_handler = MongoHandler()
-        user_object = mongodb_handler.get_user(owner)
+        user_object = mongodb_handler.get_user(user_name)
         r = requests.get(url, headers = {"Authorization": f"token {user_object['PAT']}"})
         return r.json()
     except Exception as e:
