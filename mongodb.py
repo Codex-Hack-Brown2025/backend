@@ -17,3 +17,30 @@ class MongoHandler:
     print("mongodb connection successful")
 
     self.db = self.client.get_database(db_name)
+  
+  def get_translations(self, landmark_id: str) -> tuple[dict[str, str], str]:
+    return self.db.get_collection("landmarks").find_one(
+      filter = {
+        "landmark_id": landmark_id
+    })
+
+  def store_translation(self, landmark_id, target_language, new_translation):
+    self.db.get_collection("landmarks").update_one(
+      filter = {
+        "landmark_id": landmark_id
+      },
+      update = {
+        "$set": {
+          f"translations.{target_language}": new_translation
+        }
+      })
+  
+  def store_landmark(self, landmark_id, original_language, original_translation):
+    self.db.get_collection("landmarks").insert_one({
+      "landmark_id": landmark_id,
+      "original_language": original_language,
+      "translations": {
+        original_language: original_translation
+      }
+    })
+
