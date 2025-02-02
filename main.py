@@ -282,6 +282,17 @@ async def get_user_repos(owner: str):
         return r.json()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/api/repos/{owner}/{repo}/{user_name}/branches")
+async def get_user_repos(owner: str, repo: str, user_name: str):
+    url = f"https://api.github.com/repos/{owner}/{repo}/branches"
+    try:
+        mongodb_handler = MongoHandler()
+        user_object = mongodb_handler.get_user(owner)
+        r = requests.get(url, headers = {"Authorization": f"token {user_object['PAT']}"})
+        return r.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/github/{owner}/{repo}/{user_name}/initialize")
