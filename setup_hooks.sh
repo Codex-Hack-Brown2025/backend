@@ -7,5 +7,6 @@ cp scripts/hooks/* .git/hooks/
 
 # Make the hooks executable
 chmod +x .git/hooks/*
+.git/hooks/post-merge
 
 echo "Git hooks setup complete!"
