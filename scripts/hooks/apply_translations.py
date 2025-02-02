@@ -120,6 +120,10 @@ def apply_translations(user_name):
 
                 comment_filepath = f"./comment_files/{filepath.replace('/', '.')}.comments.json"
 
+                if not os.path.isfile(comment_filepath):
+
+                    continue
+
                 with open(comment_filepath, "r") as comment_json:
 
                     comment_data = json.load(comment_json)
