@@ -50,6 +50,8 @@ class DifyHandler:
 		
 		result = r.json()
 
+		print(result)
+
 		return result["answer"]
 	
 	def translate_text(self, original_text: str, target_language: str) -> DifyTranslationResponse:
