@@ -108,8 +108,9 @@ class PullTranslationRequest(BaseModel):
 async def get_translations(request: PullTranslationRequest): 
     logger.info(f"Translating to {request.target_language}")
     try:
-        with MongoHandler() as mongodb_handler, DifyHandler() as dify_handler:
-            result = translate_comments(request.landmark_ids, request.target_language, mongodb_handler, dify_handler)
+        mongodb_handler = MongoHandler()
+        dify_handler = DifyHandler()
+        result = translate_comments(request.landmark_ids, request.target_language, mongodb_handler, dify_handler)
         return JSONResponse(content=result)
     except HTTPException as e:
         raise e
@@ -127,8 +128,9 @@ class PushTranslationRequest(BaseModel):
 @app.post("/update_translations")
 async def update_translations(request: PushTranslationRequest):
     try:
-        with MongoHandler() as mongodb_handler, DifyHandler() as dify_handler:
-            result = compare_comments(request.landmark_id_to_comments, request.current_language, mongodb_handler, dify_handler)
+        mongodb_handler = MongoHandler()
+        dify_handler = DifyHandler()
+        result = compare_comments(request.landmark_id_to_comments, request.current_language, mongodb_handler, dify_handler)
         return JSONResponse(content=result)
     except HTTPException as e:
         raise e
