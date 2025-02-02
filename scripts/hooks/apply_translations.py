@@ -74,7 +74,7 @@ def get_ignored_files():
 
 
 
-def apply_translations(user_name: str | None):
+def apply_translations(user_name):
 
 
 
