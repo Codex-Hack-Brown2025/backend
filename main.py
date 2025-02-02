@@ -47,7 +47,7 @@ def compare_comments(landmark_id_to_comments: dict[str, str], current_language: 
             # Not a new landmark
             result = mongodb_handler.get_translations(landmark_id)
 
-            if result[current_language].strip() != comment:
+            if result[current_language].rstrip() != comment:
                 # Comment is edited
                 new_landmark_id = f"{landmark}@{uuid6.uuid8().hex}"
                 mongodb_handler.store_landmark(new_landmark_id, current_language, comment)

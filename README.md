@@ -13,7 +13,7 @@ pip3.12 install -r requirements.txt
 How it is displayed in GitHub source code. Ex: landmark is called "foobar"
 
 ```
-%foobar%
+%^foobar^%
 ```
 
 How it's stored in MongoDB
