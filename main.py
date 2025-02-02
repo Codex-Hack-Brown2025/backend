@@ -201,7 +201,6 @@ async def initialize_repo(owner: str, repo: str, user_name: str):
     with open("./setup_hooks.sh", "r") as file_obj:
         content = "\n".join(file_obj.readlines())
 
-    url = f"https://api.github.com/repos/{owner}/{repo}/contents/setup_hooks.sh"
     try:
         mongodb_handler = MongoHandler()
         user_object = mongodb_handler.get_user(user_name)
@@ -209,6 +208,26 @@ async def initialize_repo(owner: str, repo: str, user_name: str):
             "Authorization": f"token {user_object['PAT']}",
             "Accept": "application/vnd.github.v3+json",
         }
+
+        url = f"https://api.github.com/repos/{owner}/{repo}/contents/comment_files/init.txt"
+
+        data = {
+            "message": "Create comment_files/ directory",
+            "content": base64.b64encode("intentionally empty".encode()).decode(),
+            "branch": "main",
+        }
+
+        r = requests.put(
+            url,
+            headers=headers,
+            data=json.dumps(data)
+        )
+
+        if r.status_code != 201:
+            print(r.text)
+            raise HTTPException(status_code=r.status_code, detail="GitHub API error")
+
+        url = f"https://api.github.com/repos/{owner}/{repo}/contents/setup_hooks.sh"
 
         data = {
             "message": "Create setup_hooks.sh",
