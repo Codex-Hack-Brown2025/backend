@@ -13,8 +13,9 @@ class DifyTranslationResponse(BaseModel):
 
 class DifyHandler:
 
-	def __init__(self, user_name: str = "undefined"):
+	def __init__(self, user_name: str = "undefined", logger = None):
 		self.user_name = user_name
+		self.logger = logger
 		self.dify_endpoint = "https://api.dify.ai/v1"
 
 	def _parse_dify_response(self, raw_response: str) -> DifyTranslationResponse:
@@ -50,7 +51,8 @@ class DifyHandler:
 		
 		result = r.json()
 
-		print(result)
+		if self.logger:
+			self.logger.info(str(result))
 
 		return result["answer"]
 	
