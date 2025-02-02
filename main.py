@@ -122,7 +122,7 @@ async def get_translations(request: PullTranslationRequest):
     logger.info(f"Translating to {request.target_language}")
     try:
         mongodb_handler = MongoHandler()
-        dify_handler = DifyHandler()
+        dify_handler = DifyHandler(logger = logger)
         result = translate_comments(request.landmark_ids, request.target_language, mongodb_handler, dify_handler)
         return JSONResponse(content=result)
     except HTTPException as e:
