@@ -1,3 +1,4 @@
+import base64
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -6,7 +7,7 @@ import uuid6
 import logging
 import requests
 import os
-import base64
+import json
 
 from mongodb import MongoHandler
 
@@ -169,4 +170,55 @@ async def get_github_content(owner: str, repo: str, path: str = "", branch: str 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    
+@app.post("/github/{owner}/{repo}/initialize")
+async def initialize_repo(owner: str, repo: str):
+    url = f"https://api.github.com/repos/{owner}/{repo}/git/trees"
+    with open("./setup_hooks.sh", "r") as file_obj:
+        content = "\n".join(file_obj.readlines())
+
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/setup_hooks.sh"
+    headers = {
+        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+
+    data = {
+        "message": "Create setup_hooks.sh",
+        "content": base64.b64encode(content.encode()).decode(),
+        "branch": "main",
+    }
+    try:
+        r = requests.put(
+            url,
+            headers=headers,
+            data=json.dumps(data)
+        )
+
+        if r.status_code != 201:
+            print(r.text)
+            raise Exception("GitHub API Error")
+
+        folder_path = "scripts/hooks/"
+        for f in os.listdir(folder_path):
+            filepath = os.path.join(folder_path, f)
+            with open(filepath, "r") as file_obj:
+                content = "\n".join(file_obj.readlines())
+            fp = os.path.join(folder_path, f)
+            data = {
+                "message": f"Create {fp}",
+                "content": base64.b64encode(content.encode()).decode(),
+                "branch": "main",
+            }
+            url = f"https://api.github.com/repos/{owner}/{repo}/contents/{fp}"
+            r = requests.put(
+                url,
+                headers=headers,
+                data=json.dumps(data)
+            )
+
+            if r.status_code != 201:
+                print(r.text)
+                raise Exception("GitHub API Error")
+        return JSONResponse(content = {"result": "success"}, status_code=200)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
