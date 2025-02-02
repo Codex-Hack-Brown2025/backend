@@ -238,10 +238,11 @@ async def get_github_content(owner: str, repo: str, user_name: str, path: str = 
                     landmark, start, _ = matches[0]
                     lines[i] = f"{line[:start]}{landmark}^%{comment_data[landmark]['comment']}"
             
-            true_result["content"] = base64.b64encode("\n".join(lines).encode("unicode")).decode("unicode")
+            true_result["content"] = base64.b64encode("\n".join(lines).encode("utf-8")).decode("utf-8")
 
             return true_result
         except Exception as e:
+            logger.info(f"Errored: {e}")
             return true_result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
